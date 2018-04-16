@@ -1,22 +1,7 @@
-import { take, call, put, select } from 'redux-saga/effects';
+import { take, call, put } from 'redux-saga/effects';
 import { Types, Creators as Actions } from './reducer';
-import { setAuthToken, clearAuthToken } from '../services/localStorage';
+import { setAuthToken, clearAuthToken, setUserId, clearUserId, getUserId } from '../services/localStorage';
 import { request, authRequest } from '../services/api';
-import { makeSelectUserId } from './selectors';
-
-export function* watchExampleRequest() {
-  while (true) {
-    const { data } = yield take(Types.EXAMPLE_REQUEST);
-    yield call(example, data);
-  }
-}
-
-export function* example() {
-  try {
-  } catch (error) {
-
-  }
-}
 
 export function* watchLoginRequest() {
   while (true) {
@@ -30,6 +15,7 @@ export function* login({ username, password }) {
     const response = yield request.post('/api-token-auth/', { username, password });
     yield put(Actions.loginSuccess(response.data));
     setAuthToken(response.data.token);
+    setUserId(response.data.id);
     yield call(getUser);
     yield call(getUsers);
   } catch (error) {
@@ -46,10 +32,11 @@ export function* watchGetUserRequest() {
 
 export function* getUser() {
   try {
-    const id = yield select(makeSelectUserId());
-    const response = yield authRequest.get(`/users/${id}/`);
+    const userId = getUserId();
+    const response = yield authRequest.get(`/users/${userId}/`);
     yield put(Actions.getUserSuccess(response.data));
   } catch (error) {
+    yield put(Actions.logout());
     yield put(Actions.getUserFailure(error.errors));
   }
 }
@@ -58,6 +45,7 @@ export function* watchLogout() {
   while (true) {
     yield take(Types.LOGOUT);
     clearAuthToken();
+    clearUserId();
   }
 }
 
@@ -70,8 +58,9 @@ export function* watchCreatePromiseRequest() {
 
 export function* createPromise({ sinceWhen, tilWhen, user2 }) {
   try {
-    const response = yield authRequest.post('/promises/', { sinceWhen, tilWhen, user2 });
+    yield authRequest.post('/promises/', { sinceWhen, tilWhen, user2 });
     yield put(Actions.createPromiseSuccess());
+    yield call(getUser);
   } catch (error) {
     yield put(Actions.createPromiseFailure(error.errors));
   }
@@ -94,9 +83,9 @@ export function* getUsers() {
 }
 
 export default [
-  watchExampleRequest,
   watchLoginRequest,
   watchGetUserRequest,
   watchCreatePromiseRequest,
   watchGetUsersRequest,
+  watchLogout,
 ];

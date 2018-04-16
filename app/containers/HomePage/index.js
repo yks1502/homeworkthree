@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
 import { createStructuredSelector } from 'reselect';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
+import 'react-datepicker/dist/react-datepicker.css';
 import { getAuthToken } from '../../services/localStorage';
 import { Creators as GlobalActions } from '../../global/reducer';
 import { makeSelectUser, makeSelectEveryUser } from '../../global/selectors';
@@ -24,8 +24,6 @@ import {
   User2Input,
 } from './index.style';
 
-import 'react-datepicker/dist/react-datepicker.css';
-
 class HomePage extends React.PureComponent { // eslint-disable-line react/prefer-stateless-function
   constructor(props) {
     super(props);
@@ -42,6 +40,13 @@ class HomePage extends React.PureComponent { // eslint-disable-line react/prefer
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  componentWillMount() {
+    if (getAuthToken()) {
+      this.props.getEveryUser();
+      this.props.getUser();
+    }
+  }
+
   handleLogin(event) {
     event.preventDefault();
     this.props.login(this.state);
@@ -54,19 +59,6 @@ class HomePage extends React.PureComponent { // eslint-disable-line react/prefer
       return;
     }
     this.props.createPromise(this.state);
-  }
-
-  componentWillMount() {
-    if (this.props.user) {
-      this.props.getEveryUser();
-    }
-  }
-
-  componentWillReceiveProps() {
-    if (this.props.user) {
-      this.props.getEveryUser();
-      this.props.getUser();
-    }
   }
 
   render() {
@@ -107,6 +99,9 @@ class HomePage extends React.PureComponent { // eslint-disable-line react/prefer
                 dateFormat="LLL"
               />
             </DatePickerWrapper>
+            <UsernameText>
+              User2
+            </UsernameText>
             <User2Input
               value={this.state.user2}
               onChange={({ target }) => this.setState({ user2: target.value })}
@@ -179,4 +174,4 @@ const mapDispatchToProps = (dispatch) => ({
   getEveryUser: () => dispatch(GlobalActions.getUsersRequest()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps) (HomePage);
+export default connect(mapStateToProps, mapDispatchToProps)(HomePage);

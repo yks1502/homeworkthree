@@ -1,9 +1,8 @@
-import { put } from 'redux-saga/effects';
 import { getAuthToken } from './localStorage';
 import fetch from '../utils/fetch';
 
 const createAPI = () => {
-  const baseURL = 'http://localhost:8000';
+  const baseURL = 'http://13.59.203.53:8000';
   const httpMethods = ['GET', 'POST', 'PUT', 'DELETE'];
   const headers = { 'Content-Type': 'application/json' };
 
@@ -11,7 +10,7 @@ const createAPI = () => {
 
   httpMethods.forEach((method) => {
     api[method.toLowerCase()] = function* (endpoint, body, options) {
-      let url = `${baseURL}${endpoint}`;
+      const url = `${baseURL}${endpoint}`;
       let authToken = getAuthToken();
       if (authToken) {
         authToken = `Token ${authToken}`;

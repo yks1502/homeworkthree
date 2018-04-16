@@ -1,12 +1,11 @@
 import { createReducer, createActions } from 'reduxsauce';
 import { fromJS } from 'immutable';
+import normalize from 'json-api-normalizer';
 
 /* ------------- Types and Action Creators ------------- */
 
 export const { Types, Creators } = createActions({
-  exampleRequest: ['data'],
-  exampleSuccess: ['payload'],
-  exampleFailure: ['error'],
+  normalizeData: ['data'],
   loginRequest: ['data'],
   loginSuccess: ['payload'],
   loginFailure: ['error'],
@@ -25,11 +24,7 @@ export const { Types, Creators } = createActions({
 /* ------------- Initial State ------------- */
 
 export const initialState = fromJS({
-  example: {
-    isFetching: false,
-    payload: null,
-    error: null,
-  },
+  entities: null,
   login: {
     isFetching: false,
     payload: null,
@@ -48,19 +43,13 @@ export const initialState = fromJS({
     isFetching: false,
     payload: null,
     error: null,
-  }
+  },
 });
 
 /* ------------- Reducers ------------- */
 
-export const exampleRequest = (state) =>
-  state.mergeDeep({ example: { isFetching: true, payload: null, error: null } });
-
-export const exampleSuccess = (state, payload) =>
-  state.mergeDeep({ example: { isFetching: false, payload, error: null } });
-
-export const exampleFailure = (state, error) =>
-  state.mergeDeep({ example: { isFetching: false, payload: null, error } });
+export const normalizeData = (state, { data }) =>
+  state.mergeDeep({ entities: normalize(data) });
 
 export const loginRequest = (state) =>
   state.mergeDeep({ login: { isFetching: true, error: null } });
@@ -78,10 +67,10 @@ export const getUserSuccess = (state, { payload }) =>
   state.mergeDeep({ user: { isFetching: false, error: null, payload } });
 
 export const getUserFailure = (state, { error }) =>
-  state.mergeDeep({ user: { isFetching: false, payload: null, error } });
+  state.mergeDeep({ user: { isFetching: false, id: null, error } });
 
 export const logout = (state) =>
-  state.mergeDeep({ login: { payload: null }, user: { payload: null } });
+  state.mergeDeep({ user: { payload: null } });
 
 export const createPromiseRequest = (state) =>
   state.mergeDeep({ createPromise: { isFetching: true, error: null } });
@@ -104,9 +93,7 @@ export const getUsersFailure = (state, { error }) =>
 /* ------------- Hookup Reducers To Types ------------- */
 
 export default createReducer(initialState, {
-  [Types.EXAMPLE_REQUEST]: exampleRequest,
-  [Types.EXAMPLE_SUCCESS]: exampleSuccess,
-  [Types.EXAMPLE_FAILURE]: exampleFailure,
+  [Types.NORMALIZE_DATA]: normalizeData,
   [Types.LOGIN_REQUEST]: loginRequest,
   [Types.LOGIN_SUCCESS]: loginSuccess,
   [Types.LOGIN_FAILURE]: loginFailure,
